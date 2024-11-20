@@ -1,7 +1,6 @@
-# bot.py
-
 import logging
 import os
+import json
 from telegram import ReplyKeyboardRemove, Update
 from telegram.ext import (
     Application, CommandHandler, ConversationHandler, MessageHandler, filters, CallbackContext,
@@ -17,7 +16,7 @@ load_dotenv()
 
 # Загрузка переменных окружения
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
-SERVICE_ACCOUNT_FILE = os.getenv("SERVICE_ACCOUNT_FILE")
+SERVICE_ACCOUNT_JSON = os.getenv("SERVICE_ACCOUNT_FILE")
 GOOGLE_SPREADSHEET_TOKEN = os.getenv("GOOGLE_SPREADSHEET_TOKEN")
 ALLOWED_USERS = os.getenv("ALLOWED_USERS").split(',')
 
@@ -31,8 +30,11 @@ logging.basicConfig(
 CATEGORY, SPENDING = range(2)
 
 # Инициализация Google Sheets
+service_account_info = json.loads(SERVICE_ACCOUNT_JSON)
+credentials = Credentials.from_service_account_info(service_account_info)
+
 gs_helper = GoogleSheetsHelper(
-    SERVICE_ACCOUNT_FILE,
+    credentials,
     GOOGLE_SPREADSHEET_TOKEN,
     ['https://www.googleapis.com/auth/drive', 'https://www.googleapis.com/auth/spreadsheets']
 )

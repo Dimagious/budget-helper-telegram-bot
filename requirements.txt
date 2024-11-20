@@ -5,6 +5,7 @@ chardet==5.1.0
 charset-normalizer==3.0.1
 google-auth==2.16.0
 google-auth-oauthlib==0.8.0
+google-api-python-client>=2.0.0
 gspread==5.7.2
 h11==0.14.0
 httpcore==0.16.3
