@@ -1,0 +1,51 @@
+# Python
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+*.pdb
+*.egg
+*.egg-info/
+dist/
+build/
+*.so
+
+# .env files
+.env
+.env.*
+
+# Credentials files
+*.json  # For Google API credentials (ensure to add your credentials file to .gitignore)
+
+# Virtual environments
+venv/
+env/
+etc/
+ENV/
+.venv/
+.Python
+pip-log.txt
+
+# IDEs and Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*.sublime-workspace
+*.sublime-project
+
+# Logs
+*.log
+
+# Python bytecode files
+*.pyc
+
+# Windows-specific files
+Thumbs.db
+Desktop.ini
+
+# macOS-specific files
+.DS_Store
+
+# Google Cloud Platform
+budget-helper-bot-369c59463907.json
