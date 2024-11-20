@@ -86,7 +86,7 @@ async def set_spending(update: Update, context: CallbackContext) -> int:
     return ConversationHandler.END
 
 
-async def help_command(update: Update, context: CallbackContext) -> None:
+async def help(update: Update, context: CallbackContext) -> None:
     """Обработка команды /help."""
     help_text = constants.HELP_TEXT
     await update.message.reply_text(help_text)
@@ -110,7 +110,7 @@ def main() -> None:
             CATEGORY: [MessageHandler(filters.Regex(constants.REGEX_FOR_CATEGORIES), set_category)],
             SPENDING: [MessageHandler(filters.Regex(constants.REGEX_FOR_SPENDING), set_spending)],
         },
-        fallbacks=[CommandHandler("cancel", cancel)],
+        fallbacks=[CommandHandler("cancel", cancel), CommandHandler("help", help)],
     )
 
     application.add_handler(conv_handler)
