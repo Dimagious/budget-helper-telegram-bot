@@ -86,6 +86,11 @@ async def set_spending(update: Update, context: CallbackContext) -> int:
     return ConversationHandler.END
 
 
+async def help_command(update: Update, context: CallbackContext) -> None:
+    """Обработка команды /help."""
+    help_text = constants.HELP_TEXT
+    await update.message.reply_text(help_text)
+
 
 async def cancel(update: Update, context: CallbackContext) -> int:
     """Обработка команды /cancel."""
