@@ -2,8 +2,8 @@ import gspread
 from google.oauth2.service_account import Credentials
 
 class GoogleSheetsHelper:
-    def __init__(self, service_account_file, spreadsheet_id, scopes):
-        creds = Credentials.from_service_account_file(service_account_file, scopes=scopes)
+    def __init__(self, service_account_info, spreadsheet_id, scopes):
+        creds = Credentials.from_service_account_info(service_account_info, scopes=scopes)
         self.gc = gspread.authorize(creds)
         self.sheet = self.gc.open_by_key(spreadsheet_id).sheet1
 

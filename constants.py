@@ -14,6 +14,7 @@ CANCELLED = "Ок"
 
 # Диапазоны для работы с Google Sheets
 RANGE_FOR_CATEGORIES = "A1:A15"
+SCOPES = ['https://www.googleapis.com/auth/drive', 'https://www.googleapis.com/auth/spreadsheets']
 
 # Маппинг категорий на строки в таблице
 CATEGORIES = {

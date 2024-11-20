@@ -16,9 +16,9 @@ load_dotenv()
 
 # Загрузка переменных окружения
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
-SERVICE_ACCOUNT_JSON = os.getenv("SERVICE_ACCOUNT_FILE")
+SERVICE_ACCOUNT_JSON = os.getenv("SERVICE_ACCOUNT_JSON")
 GOOGLE_SPREADSHEET_TOKEN = os.getenv("GOOGLE_SPREADSHEET_TOKEN")
-ALLOWED_USERS = os.getenv("ALLOWED_USERS").split(',')
+ALLOWED_USERS = [user.strip("'") for user in os.getenv("ALLOWED_USERS").split(",")]
 
 # Логирование
 logging.basicConfig(
@@ -31,19 +31,13 @@ CATEGORY, SPENDING = range(2)
 
 # Инициализация Google Sheets
 service_account_info = json.loads(SERVICE_ACCOUNT_JSON)
-credentials = Credentials.from_service_account_info(service_account_info)
-
-gs_helper = GoogleSheetsHelper(
-    credentials,
-    GOOGLE_SPREADSHEET_TOKEN,
-    ['https://www.googleapis.com/auth/drive', 'https://www.googleapis.com/auth/spreadsheets']
-)
+gs_helper = GoogleSheetsHelper(service_account_info, GOOGLE_SPREADSHEET_TOKEN, constants.SCOPES)
 
 async def start(update: Update, context: CallbackContext) -> int:
     """Обработка команды /start."""
     user_id = update.message.from_user.id
     user_name = update.message.from_user.username
-    if not is_allowed_user(user_id, ALLOWED_USERS):
+    if str(user_id) not in ALLOWED_USERS:
         logging.info(f"Несанкционированный пользователь {user_name} попытался получить доступ.")
         await update.message.reply_text(constants.SORRY)
         return ConversationHandler.END
@@ -71,13 +65,14 @@ async def set_spending(update: Update, context: CallbackContext) -> int:
     try:
         category = context.user_data['category']
         # Удаляем запятую или заменяем её на точку для корректной обработки
-        spending_str = update.message.text.replace(',', '')
+        spending_str = update.message.text.replace(',', '').strip()
         spending = float(spending_str)  # Преобразуем строку в число
 
         row_to_update = constants.CATEGORIES.get(category)
         col_to_update = get_current_month_column()
 
-        existing_value = float(gs_helper.get_cell_value(row_to_update, col_to_update) or 0)
+        existing_value_str = gs_helper.get_cell_value(row_to_update, col_to_update)
+        existing_value = float(existing_value_str.replace(',', '') if existing_value_str else 0)
         updated_value = existing_value + spending
 
         gs_helper.update_cell(row_to_update, col_to_update, updated_value)
