@@ -43,12 +43,8 @@ async def start(update: Update, context: CallbackContext) -> int:
         return ConversationHandler.END
 
     log_user_action("start", user_name)
-
-    # Клавиатура с кнопками "Внести доход" и "Внести расход"
-    keyboard = [[constants.ADD_INCOME], [constants.ADD_EXPENSE]]
-    reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
-
-    await update.message.reply_text(constants.WHAT_DID_YOU_SPEND, reply_markup=reply_markup)
+    keyboard = create_keyboard([constants.ADD_INCOME, constants.ADD_EXPENSE])
+    await update.message.reply_text(constants.WHAT_DID_YOU_SPEND, reply_markup=keyboard)
     return CHOOSE_CATEGORY
 
 async def handle_category(update: Update, context: CallbackContext) -> int:
@@ -58,7 +54,7 @@ async def handle_category(update: Update, context: CallbackContext) -> int:
 
     if choice == constants.ADD_INCOME:
         # Клавиатура для категорий доходов
-        await update.message.reply_text("Функция добавления дохода пока не реализована. Ожидайте обновлений!")
+        await update.message.reply_text("Функция добавления дохода пока не реализована. Ожидайте обновлений!", reply_markup=ReplyKeyboardRemove())
         return ConversationHandler.END
         # income_categories = gs_helper.get_categories(constants.RANGE_FOR_INCOME_CATEGORIES)
         # keyboard = ReplyKeyboardMarkup(
@@ -69,9 +65,7 @@ async def handle_category(update: Update, context: CallbackContext) -> int:
     elif choice == constants.ADD_EXPENSE:
         # Клавиатура для категорий расходов
         expense_categories = gs_helper.get_categories(constants.RANGE_FOR_EXPENSE_CATEGORIES)
-        keyboard = ReplyKeyboardMarkup(
-            [[category] for category in expense_categories], resize_keyboard=True
-        )
+        keyboard = create_keyboard(expense_categories, True)
         await update.message.reply_text("Выберите категорию расхода:", reply_markup=keyboard)
         return SET_EXPENSE_CATEGORY
     else:
@@ -89,7 +83,7 @@ async def add_expense(update: Update, context: CallbackContext) -> int:
 
     # Получение категорий расходов
     categories = gs_helper.get_categories(constants.RANGE_FOR_EXPENSE_CATEGORIES)
-    keyboard = create_keyboard(categories)
+    keyboard = create_keyboard(categories, True)
 
     context.user_data['categories'] = categories
 
