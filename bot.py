@@ -24,7 +24,8 @@ ALLOWED_USERS = [user.strip("'") for user in os.getenv("ALLOWED_USERS").split(",
 logging.basicConfig(
     filename='bot.log',
     format='%(asctime)s - %(levelname)s - %(message)s',
-    level=logging.INFO
+    level=logging.INFO,
+    handlers=[logging.StreamHandler()]
 )
 
 # Инициализация Google Sheets
