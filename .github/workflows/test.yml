@@ -1,0 +1,35 @@
+name: Run Tests Before Merge
+
+on:
+  pull_request:
+    branches:
+      - master  # Триггер на создание pull request в ветку master
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.9'
+
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip  # Кэшируем директорию с pip
+          key: ${{ runner.os }}-python-${{ hashFiles('**/requirements.txt') }}  # Генерация ключа кэша на основе изменений в requirements.txt
+          restore-keys: |
+            ${{ runner.os }}-python-
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt  # Установка зависимостей из requirements.txt
+
+      - name: Run tests
+        run: |
+          python -m unittest discover # Запуск тестов с использованием unittest
