@@ -5,7 +5,6 @@ from telegram import ReplyKeyboardRemove, Update
 from telegram.ext import (
     Application, CommandHandler, ConversationHandler, MessageHandler, filters, CallbackContext,
 )
-from google.oauth2.service_account import Credentials
 from utils.google_api import GoogleSheetsHelper
 from utils.keyboard import create_keyboard
 import constants
