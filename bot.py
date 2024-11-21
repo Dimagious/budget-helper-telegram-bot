@@ -104,13 +104,17 @@ def main() -> None:
     """Запуск бота."""
     application = Application.builder().token(TELEGRAM_BOT_TOKEN).build()
 
+    # Обработчики команд
+    application.add_handler(CommandHandler("help", help))  # Обрабатывает /help в любое время
+    application.add_handler(CommandHandler("cancel", cancel))  # Отдельный обработчик для /cancel
+
     conv_handler = ConversationHandler(
         entry_points=[CommandHandler("start", start)],
         states={
             CATEGORY: [MessageHandler(filters.Regex(constants.REGEX_FOR_CATEGORIES), set_category)],
             SPENDING: [MessageHandler(filters.Regex(constants.REGEX_FOR_SPENDING), set_spending)],
         },
-        fallbacks=[CommandHandler("cancel", cancel), CommandHandler("help", help)],
+        fallbacks=[CommandHandler("cancel", cancel)], # Обработчик для команды /cancel во время диалога
     )
 
     application.add_handler(conv_handler)
