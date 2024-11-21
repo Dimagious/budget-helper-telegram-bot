@@ -1,7 +1,7 @@
 import logging
 import os
 import json
-from telegram import ReplyKeyboardRemove, Update
+from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove, Update
 from telegram.ext import (
     Application, CommandHandler, ConversationHandler, MessageHandler, filters, CallbackContext,
 )
@@ -27,7 +27,7 @@ logging.basicConfig(
     level=logging.INFO
 )
 
-CATEGORY, SPENDING = range(2)
+CHOOSE_CATEGORY, SET_EXPENSE_CATEGORY, SET_EXPENSE_AMOUNT, SET_INCOME_CATEGORY, SET_INCOME_AMOUNT = range(5)
 
 # Инициализация Google Sheets
 service_account_info = json.loads(SERVICE_ACCOUNT_JSON)
@@ -42,28 +42,76 @@ async def start(update: Update, context: CallbackContext) -> int:
         await update.message.reply_text(constants.SORRY)
         return ConversationHandler.END
 
-    log_user_action("start", user_id)
-    categories = gs_helper.get_categories(constants.RANGE_FOR_CATEGORIES)
+    log_user_action("start", user_name)
+
+    # Клавиатура с кнопками "Внести доход" и "Внести расход"
+    keyboard = [[constants.ADD_INCOME], [constants.ADD_EXPENSE]]
+    reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
+
+    await update.message.reply_text(constants.WHAT_DID_YOU_SPEND, reply_markup=reply_markup)
+    return CHOOSE_CATEGORY
+
+async def handle_category(update: Update, context: CallbackContext) -> int:
+    """Обработка выбора действия: доход или расход."""
+    choice = update.message.text
+    context.user_data['choice'] = choice
+
+    if choice == constants.ADD_INCOME:
+        # Клавиатура для категорий доходов
+        await update.message.reply_text("Функция добавления дохода пока не реализована. Ожидайте обновлений!")
+        return ConversationHandler.END
+        # income_categories = gs_helper.get_categories(constants.RANGE_FOR_INCOME_CATEGORIES)
+        # keyboard = ReplyKeyboardMarkup(
+        #     [[category] for category in income_categories], resize_keyboard=True
+        # )
+        # await update.message.reply_text("Выберите категорию дохода:", reply_markup=keyboard)
+        # return INCOME_CATEGORY
+    elif choice == constants.ADD_EXPENSE:
+        # Клавиатура для категорий расходов
+        expense_categories = gs_helper.get_categories(constants.RANGE_FOR_EXPENSE_CATEGORIES)
+        keyboard = ReplyKeyboardMarkup(
+            [[category] for category in expense_categories], resize_keyboard=True
+        )
+        await update.message.reply_text("Выберите категорию расхода:", reply_markup=keyboard)
+        return SET_EXPENSE_CATEGORY
+    else:
+        await update.message.reply_text("Пожалуйста, выберите один из вариантов.", reply_markup=ReplyKeyboardRemove())
+        return ConversationHandler.END
+
+async def add_income(update: Update, context: CallbackContext) -> None:
+    """Заглушка для кнопки 'Внести доход'."""
+    log_user_action("add_income", update.message.from_user.username)
+    await update.message.reply_text("Функция добавления дохода пока не реализована. Ожидайте обновлений!")
+
+async def add_expense(update: Update, context: CallbackContext) -> int:
+    """Обработка команды 'Внести расход': выбор категории."""
+    log_user_action("add_expense", update.message.from_user.username)
+
+    # Получение категорий расходов
+    categories = gs_helper.get_categories(constants.RANGE_FOR_EXPENSE_CATEGORIES)
     keyboard = create_keyboard(categories)
 
+    context.user_data['categories'] = categories
+
+    chosen_category = update.message.text
+    if chosen_category in categories:
+        context.user_data['category'] = chosen_category
+    else:
+        await update.message.reply_text("Пожалуйста, выбери предложенную категорию.")
+        return SET_EXPENSE_CATEGORY
+
     await update.message.reply_text(constants.WHAT_DID_YOU_SPEND, reply_markup=keyboard)
-    return CATEGORY
+    return SET_EXPENSE_AMOUNT
 
 
-async def set_category(update: Update, context: CallbackContext) -> int:
-    """Обработка выбора категории."""
-    user_id = update.message.from_user.id
-    context.user_data['category'] = update.message.text
-    log_user_action("set_category", user_id, context.user_data['category'])
-
-    await update.message.reply_text(constants.HOW_MUCH_DID_YOU_SPEND, reply_markup=ReplyKeyboardRemove())
-    return SPENDING
-
-
-async def set_spending(update: Update, context: CallbackContext) -> int:
+async def set_expense_amount(update: Update, context: CallbackContext) -> int:
     """Обработка ввода суммы и обновление Google Sheets."""
     try:
-        category = context.user_data['category']
+        # Извлекаем категорию из user_data
+        category = context.user_data.get('category')
+        if not category:
+            raise ValueError("Категория не была выбрана.")
+        
         # Удаляем запятую или заменяем её на точку для корректной обработки
         spending_str = update.message.text.replace(',', '').strip()
         spending = float(spending_str)  # Преобразуем строку в число
@@ -77,7 +125,7 @@ async def set_spending(update: Update, context: CallbackContext) -> int:
 
         gs_helper.update_cell(row_to_update, col_to_update, updated_value)
         user_name = update.message.from_user.username
-        logging.info(f"{user_name} внёс значение в \"{category}\". Было: {existing_value}. Стало: {updated_value}")
+        logging.info(f"{user_name} внёс расход в \"{category}\". Было: {existing_value}. Стало: {updated_value}")
 
         await update.message.reply_text(constants.SPENDING_ADDED.format(category, spending))
     except (ValueError, AttributeError) as e:
@@ -94,8 +142,8 @@ async def help(update: Update, context: CallbackContext) -> None:
 
 async def cancel(update: Update, context: CallbackContext) -> int:
     """Обработка команды /cancel."""
-    user_id = update.message.from_user.id
-    log_user_action("cancel", user_id)
+    user_name = update.message.from_user.username
+    log_user_action("cancel", user_name)
     await update.message.reply_text(constants.CANCELLED, reply_markup=ReplyKeyboardRemove())
     return ConversationHandler.END
 
@@ -111,10 +159,13 @@ def main() -> None:
     conv_handler = ConversationHandler(
         entry_points=[CommandHandler("start", start)],
         states={
-            CATEGORY: [MessageHandler(filters.Regex(constants.REGEX_FOR_CATEGORIES), set_category)],
-            SPENDING: [MessageHandler(filters.Regex(constants.REGEX_FOR_SPENDING), set_spending)],
+            CHOOSE_CATEGORY: [MessageHandler(filters.Text([constants.ADD_INCOME, constants.ADD_EXPENSE]), handle_category),],
+            # SET_INCOME_CATEGORY: [MessageHandler(filters.Regex(constants.RANGE_FOR_INCOME_CATEGORIES), add_income)],
+            SET_EXPENSE_CATEGORY: [MessageHandler(filters.ALL, add_expense)],
+            # SET_INCOME_AMOUNT: [MessageHandler(filters.Regex(constants.REGEX_FOR_SPENDING), set_income_amount)],
+            SET_EXPENSE_AMOUNT: [MessageHandler(filters.Regex(constants.REGEX_FOR_SPENDING), set_expense_amount)],
         },
-        fallbacks=[CommandHandler("cancel", cancel)], # Обработчик для команды /cancel во время диалога
+        fallbacks=[CommandHandler("cancel", cancel)],  # Обработчик для команды /cancel во время диалога
     )
 
     application.add_handler(conv_handler)
