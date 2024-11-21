@@ -7,9 +7,13 @@ def get_current_month_column() -> int:
     current_month = datetime.datetime.now().month
     return constants.MONTH_TO_COLUMN.get(current_month)
 
-def log_user_action(action: str, user_id: int, detail: str = "") -> None:
+def log_user_action(action: str, user_name: str, detail: str = "") -> None:
     """Логирует действия пользователя для лучшей прослеживаемости."""
-    logging.info(f"User {user_id} performed {action}. Detail: {detail}")
+    log_message = f"{user_name} выбрал команду {action}."
+    if detail:  # Проверяем, есть ли значение в detail
+        log_message += f" Detail: {detail}"
+    logging.info(log_message)
+
 
 
 def is_allowed_user(user_id: int, allowed_users: list) -> bool:
