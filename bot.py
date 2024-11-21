@@ -61,7 +61,7 @@ async def handle_category(update: Update, context: CallbackContext) -> int:
         return constants.SET_INCOME_CATEGORY
     elif choice == constants.ADD_EXPENSE:
         # Клавиатура для категорий расходов
-        expense_categories = gs_helper.get_categories(constants.expense_SHEET_NAME, constants.RANGE_FOR_EXPENSE_CATEGORIES)
+        expense_categories = gs_helper.get_categories(constants.EXPENSE_SHEET_NAME, constants.RANGE_FOR_EXPENSE_CATEGORIES)
         keyboard = create_keyboard(expense_categories, True)
         await update.message.reply_text("Выбери категорию расхода:", reply_markup=keyboard)
         return constants.SET_EXPENSE_CATEGORY
