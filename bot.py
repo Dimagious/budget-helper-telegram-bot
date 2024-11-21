@@ -22,11 +22,11 @@ ALLOWED_USERS = [user.strip("'") for user in os.getenv("ALLOWED_USERS").split(",
 
 # Логирование
 logging.basicConfig(
-    filename='bot.log',
     format='%(asctime)s - %(levelname)s - %(message)s',
-    level=logging.INFO,
+    level=logging.DEBUG,
     handlers=[logging.StreamHandler()]
 )
+logging.info("Бот запущен")
 
 # Инициализация Google Sheets
 service_account_info = json.loads(SERVICE_ACCOUNT_JSON)
