@@ -30,6 +30,14 @@ jobs:
         run: |
           pip install -r requirements.txt  # Установка зависимостей из requirements.txt
 
+      - name: Check installed packages
+        run: |
+          pip freeze  # Проверка установленных зависимостей
+
+      - name: List files in project
+        run: |
+          ls -R  # Проверка структуры директорий
+
       - name: Run tests
         run: |
-          python -m unittest discover # Запуск тестов с использованием unittest
+          python -m unittest discover -s tests -v  # Запуск тестов с подробным выводом

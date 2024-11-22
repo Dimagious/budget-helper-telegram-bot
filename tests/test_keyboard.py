@@ -1,6 +1,5 @@
 import unittest
-from telegram import ReplyKeyboardMarkup, KeyboardButton
-from utils.keyboard import create_keyboard  # замените на реальное имя модуля
+from utils.keyboard import create_keyboard
 
 class TestCreateKeyboard(unittest.TestCase):
 
