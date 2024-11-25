@@ -82,13 +82,12 @@ async def add_income(update: Update, context: CallbackContext) -> None:
     chosen_category = update.message.text
     if chosen_category in categories:
         context.user_data['category'] = chosen_category
+        await update.message.reply_text(constants.HOW_MUCH_DO_YOU_GET, reply_markup=ReplyKeyboardRemove())
+        return constants.SET_INCOME_AMOUNT
     else:
-        await update.message.reply_text("Пожалуйста, выбери предложенную категорию.")
+        await update.message.reply_text(constants.CHOOSE_CATEGORY)
         return constants.SET_INCOME_CATEGORY
     
-    await update.message.reply_text(constants.HOW_MUCH_DO_YOU_GET, reply_markup=keyboard)
-    return constants.SET_INCOME_AMOUNT
-
 
 async def add_expense(update: Update, context: CallbackContext) -> int:
     """Обработка команды 'Внести расход': выбор категории."""
@@ -103,7 +102,7 @@ async def add_expense(update: Update, context: CallbackContext) -> int:
     chosen_category = update.message.text
     if chosen_category in categories:
         context.user_data['category'] = chosen_category
-        await update.message.reply_text(constants.WHAT_DID_YOU_SPEND, reply_markup=ReplyKeyboardRemove())
+        await update.message.reply_text(constants.HOW_MUCH_DID_YOU_SPEND, reply_markup=ReplyKeyboardRemove())
         return constants.SET_EXPENSE_AMOUNT
     else:
         await update.message.reply_text(constants.CHOOSE_CATEGORY)
@@ -122,7 +121,6 @@ async def set_expense_amount(update: Update, context: CallbackContext) -> int:
         # Удаляем запятую или заменяем её на точку для корректной обработки
         expense_str = update.message.text.replace(',', '').strip()
         if not expense_str.isdigit():
-            # Изменено: Добавлена проверка на ввод нечислового значения
             await update.message.reply_text(constants.WRONG_AMOUNT)
             return constants.SET_EXPENSE_AMOUNT
 
@@ -152,10 +150,15 @@ async def set_income_amount(update: Update, context: CallbackContext) -> int:
         # Извлекаем категорию из user_data
         category = context.user_data.get('category')
         if not category:
-            raise ValueError("Категория не была выбрана.")
+            await update.message.reply_text(constants.CHOOSE_CATEGORY)
+            return constants.SET_INCOME_CATEGORY
         
         # Удаляем запятую или заменяем её на точку для корректной обработки
         income_str = update.message.text.replace(',', '').strip()
+        if not income_str.isdigit():
+            await update.message.reply_text(constants.WRONG_AMOUNT)
+            return constants.SET_INCOME_AMOUNT
+        
         income = float(income_str)  # Преобразуем строку в число
         
         row_to_update = constants.INCOME_CATEGORIES.get(category)

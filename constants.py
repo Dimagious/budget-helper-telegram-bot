@@ -22,15 +22,14 @@ CHOOSE_CATEGORY, SET_EXPENSE_CATEGORY, SET_EXPENSE_AMOUNT, SET_INCOME_CATEGORY, 
 # Сообщения бота по сценарию "Внести доход"
 ADD_INCOME = "Внести доход"
 WHERE_DO_YOU_GET_MONEY = "Куда внести доход?"
-HOW_MUCH_DO_YOU_GET = "Сколько внести?"
+HOW_MUCH_DO_YOU_GET = "Сколько было получено? Впиши сумму:"
 INCOME_ADDED = 'Записал в категорию "{}": {}'
 INCOME_SHEET_NAME = "Доходы"
 
 # Сообщения бота по сценарию "Внести расход"
 ADD_EXPENSE = "Внести расход"
 CHOOSE_OPERATION = "Какую операцию ты хочешь совершить?"
-WHAT_DID_YOU_SPEND = "На что были потрачены деньги? Впиши сумму:"
-HOW_MUCH_DID_YOU_SPEND = "Сколько было потрачено?"
+HOW_MUCH_DID_YOU_SPEND = "Сколько было потрачено? Впиши сумму:"
 EXPENSE_ADDED = 'Записал в категорию "{}": {}'
 EXPENSE_SHEET_NAME = "Расходы"
 
