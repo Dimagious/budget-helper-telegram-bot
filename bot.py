@@ -43,7 +43,7 @@ async def start(update: Update, context: CallbackContext) -> int:
 
     log_user_action("start", user_name)
     keyboard = create_keyboard([constants.ADD_INCOME, constants.ADD_EXPENSE])
-    await update.message.reply_text(constants.WHAT_DID_YOU_SPEND, reply_markup=keyboard)
+    await update.message.reply_text(constants.CHOOSE_OPERATION, reply_markup=keyboard)
     return constants.CHOOSE_CATEGORY
 
 
@@ -103,12 +103,11 @@ async def add_expense(update: Update, context: CallbackContext) -> int:
     chosen_category = update.message.text
     if chosen_category in categories:
         context.user_data['category'] = chosen_category
+        await update.message.reply_text(constants.WHAT_DID_YOU_SPEND, reply_markup=ReplyKeyboardRemove())
+        return constants.SET_EXPENSE_AMOUNT
     else:
-        await update.message.reply_text("Пожалуйста, выбери предложенную категорию.")
+        await update.message.reply_text(constants.CHOOSE_CATEGORY)
         return constants.SET_EXPENSE_CATEGORY
-
-    await update.message.reply_text(constants.WHAT_DID_YOU_SPEND, reply_markup=keyboard)
-    return constants.SET_EXPENSE_AMOUNT
 
 
 async def set_expense_amount(update: Update, context: CallbackContext) -> int:
@@ -117,13 +116,18 @@ async def set_expense_amount(update: Update, context: CallbackContext) -> int:
         # Извлекаем категорию из user_data
         category = context.user_data.get('category')
         if not category:
-            raise ValueError("Категория не была выбрана.")
-        
+            await update.message.reply_text(constants.CHOOSE_CATEGORY)
+            return constants.SET_EXPENSE_CATEGORY
+
         # Удаляем запятую или заменяем её на точку для корректной обработки
         expense_str = update.message.text.replace(',', '').strip()
+        if not expense_str.isdigit():
+            # Изменено: Добавлена проверка на ввод нечислового значения
+            await update.message.reply_text(constants.WRONG_AMOUNT)
+            return constants.SET_EXPENSE_AMOUNT
+
         expense = float(expense_str)  # Преобразуем строку в число
 
-        #TODO убрать категории из констант и использвать их из контекста
         row_to_update = constants.EXPENSE_CATEGORIES.get(category)
         col_to_update = get_current_month_column()
 
