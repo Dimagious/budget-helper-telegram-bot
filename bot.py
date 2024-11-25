@@ -189,8 +189,18 @@ async def cancel(update: Update, context: CallbackContext) -> int:
     """Обработка команды /cancel."""
     user_name = update.message.from_user.username
     log_user_action("cancel", user_name)
-    await update.message.reply_text(constants.CANCELLED, reply_markup=ReplyKeyboardRemove())
-    return ConversationHandler.END
+    
+    try:
+        context.user_data.clear()
+        await update.message.reply_text(constants.CANCELLED, reply_markup=ReplyKeyboardRemove())
+        return ConversationHandler.END
+    except Exception as ex:
+        log_user_action("cancel", user_name, f"Ошибка сброса состояния: {ex}")
+        await update.message.reply_text(
+            "Произошла ошибка при сбросе состояния. Попробуй еще раз.",
+            reply_markup=ReplyKeyboardRemove()
+        )
+        return ConversationHandler.END
 
 
 def main() -> None:
