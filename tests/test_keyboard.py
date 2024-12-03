@@ -1,5 +1,7 @@
 import unittest
+
 from utils.keyboard import create_keyboard
+
 
 class TestCreateKeyboard(unittest.TestCase):
 
@@ -39,5 +41,6 @@ class TestCreateKeyboard(unittest.TestCase):
         # Проверяем, что при пустом списке категорий, клавиатура не имеет кнопок
         self.assertEqual(len(result.keyboard), 0)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

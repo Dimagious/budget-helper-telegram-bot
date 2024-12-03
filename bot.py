@@ -1,9 +1,20 @@
 import logging
 import os
-from telegram.ext import (Application, CommandHandler, ConversationHandler, MessageHandler, filters,)
-import constants
-from handlers import start, handle_category, add_income, add_expense, set_income_amount, set_expense_amount, help, cancel
+
 from dotenv import load_dotenv
+from telegram.ext import Application, CommandHandler, ConversationHandler, MessageHandler, filters
+
+import constants
+from handlers import (
+    add_expense,
+    add_income,
+    cancel,
+    handle_category,
+    help,
+    set_expense_amount,
+    set_income_amount,
+    start,
+)
 
 # Загрузка переменных окружения
 load_dotenv()
@@ -11,9 +22,9 @@ TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 
 # Логирование
 logging.basicConfig(
-    format='%(asctime)s - %(levelname)s - %(message)s',
+    format="%(asctime)s - %(levelname)s - %(message)s",
     level=logging.DEBUG,
-    handlers=[logging.StreamHandler()]
+    handlers=[logging.StreamHandler()],
 )
 logging.info("Бот запущен")
 
@@ -29,11 +40,18 @@ def main() -> None:
     conv_handler = ConversationHandler(
         entry_points=[CommandHandler("start", start)],
         states={
-            constants.CHOOSE_CATEGORY: [MessageHandler(filters.Text([constants.ADD_INCOME, constants.ADD_EXPENSE]), handle_category),],
+            constants.CHOOSE_CATEGORY: [
+                MessageHandler(
+                    filters.Text([constants.ADD_INCOME, constants.ADD_EXPENSE]),
+                    handle_category,
+                ),
+            ],
             constants.SET_INCOME_CATEGORY: [MessageHandler(filters.ALL, add_income)],
             constants.SET_EXPENSE_CATEGORY: [MessageHandler(filters.ALL, add_expense)],
             constants.SET_INCOME_AMOUNT: [MessageHandler(filters.Regex(constants.REGEX_FOR_AMOUNT), set_income_amount)],
-            constants.SET_EXPENSE_AMOUNT: [MessageHandler(filters.Regex(constants.REGEX_FOR_AMOUNT), set_expense_amount)],
+            constants.SET_EXPENSE_AMOUNT: [
+                MessageHandler(filters.Regex(constants.REGEX_FOR_AMOUNT), set_expense_amount)
+            ],
         },
         fallbacks=[CommandHandler("cancel", cancel)],  # Обработчик для команды /cancel во время диалога
     )
